@@ -8,21 +8,45 @@ function Home(){
 
     const [searchQuery, setSearchQuery] = useState("") // State to hold the search input
     const [movies, setMovies] = useState([]) // State to hold the list of movies
+    const [error, setError] = useState(null) // State to hold any error message
+    const [loading, setLoading] = useState(true) // State to indicate loading status
 
     useEffect(() => {
         const loadPopularMovies = async () => {
             try{
                 const popularMovies = await getPopularMovies();
                 setMovies(popularMovies);
-            }catch (err){}
-            finally{}
+            }catch (err){
+                console.error("Error fetching popular movies:", err);
+                setError("Failed to load popular movies.");
+            }
+            finally{
+                setLoading(false);
+            }
         }
+
+        loadPopularMovies();
     },[]);
 
-    const handleSearch = (e) =>{
+    const handleSearch = async(e) =>{
         e.preventDefault(); // don't refresh the page
-        alert("Faahhhh")
-        setSearchQuery("----------") // just to demonstrate that we can set the state
+        
+        if(!searchQuery.trim()) return; // if search query is empty, do nothing
+        if(loading) return; // if already loading, do nothing
+
+        setLoading(true)
+
+        try{
+            const results = await searchMovies(searchQuery);
+            setMovies(results);
+            setError(null);
+
+        }catch (err){
+            console.error("Error searching movies:", err);
+            setError("Failed to search movies.");
+        }finally{
+            setLoading(false);
+        }
     }
 
     return <div className="home">
@@ -37,6 +61,18 @@ function Home(){
             <button type="submit" className="search-button">Search</button>
         </form>
 
+        {error && <div className="error-message">{error}</div>}
+
+        {(loading ? (
+            <div className="loading">Loading...</div>
+        ) : (
+            <div className="movies-grid">
+                {movies.map(movie => 
+                    <MovieCard key={movie.id} movie={movie} />
+                )
+                }
+            </div>
+        ))}
         <div className="movies-grid">
             {movies.map(movie => 
                 <MovieCard key={movie.id} movie={movie} />
