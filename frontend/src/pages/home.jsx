@@ -1,16 +1,23 @@
 import MovieCard  from "../Components/MovieCard"
-import { useState } from "react"
+import { useState , useEffect} from "react"
+import '../css/Home.css'
+import { searchMovies,getPopularMovies } from "../services/api"
 
 
 function Home(){
 
     const [searchQuery, setSearchQuery] = useState("") // State to hold the search input
+    const [movies, setMovies] = useState([]) // State to hold the list of movies
 
-    const movies = [
-        {id:1, title:"One upon a time in hollywood", release_date:"2019"},
-        {id:2, title:"Inception", release_date:"2010"},
-        {id:3, title:"Interstellar", release_date:"2014"},
-    ]
+    useEffect(() => {
+        const loadPopularMovies = async () => {
+            try{
+                const popularMovies = await getPopularMovies();
+                setMovies(popularMovies);
+            }catch (err){}
+            finally{}
+        }
+    },[]);
 
     const handleSearch = (e) =>{
         e.preventDefault(); // don't refresh the page
